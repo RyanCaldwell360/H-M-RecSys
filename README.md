@@ -16,15 +16,16 @@ The goal is to build a production-ready app (like Netflix/Spotify-style UIs) usi
 
 ## 🧱 Project Structure
 
+```text
 h-m-recsys/
-├── app/ # Streamlit app code
-│ └── home.py
-├── models/ # Future recommender system models
-├── data/ # Data files (CSV, metadata, etc.)
 ├── .venv/ # uv-created virtual environment
-├── README.md
+|── app/ # Streamlit app code
+│ └── home.py
+├── data/ # Data files (CSV, metadata, etc.)
+├── models/ # Future recommender system models
 ├── .gitignore
-
+├── README.md
+```
 ---
 
 ## 💻 Getting Started
