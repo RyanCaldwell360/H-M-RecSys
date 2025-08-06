@@ -19,7 +19,7 @@ def display_items(title, items, num_columns=5):
     cols = st.columns(num_columns)
     for idx, item in enumerate(items):
         with cols[idx % num_columns]:
-            st.image(item["image"], use_column_width=True)
+            st.image(item["image"], use_container_width=True)
             st.caption(item["title"])
             st.markdown(f"**{item['price']}**")
 
