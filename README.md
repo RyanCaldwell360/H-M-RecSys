@@ -1,93 +1,76 @@
-# 🛍️ H&M Personalized Recommender System
+# H&M Personalized Fashion Storefront
 
-This project is a personalized recommender system built on transaction data from the [H&M Personalized Fashion Recommendations](https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations) Kaggle competition.
+A production-like fashion storefront built on the [H&M Personalized Fashion Recommendations](https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations) dataset. The project pairs a polished shopping experience with an intentionally visible recommendation layer so it can grow into both a useful RecSys learning project and a portfolio case study.
 
-The goal is to build a production-ready app (like Netflix/Spotify-style UIs) using [Streamlit](https://streamlit.io/) that lets users explore item recommendations and product data interactively.
+> This is an educational portfolio project and is not affiliated with H&M.
 
----
+## What works today
 
-## 🚀 Features
+- A responsive storefront using 20 real catalog records and their product photography
+- Three demo shopper profiles that rerank the collection in real time
+- An explainable popularity + affinity baseline recommender
+- Search, category filters, favourites, product details, size selection, and a demo bag
+- A model explainer that shows the current signals and the path to TIGER
+- A Cloudflare-compatible production build under `storefront/`
 
-- Clean Streamlit front-end (mimics real-world shopping interfaces)
-- Modular architecture for plugging in different RecSys models
-- Easy to extend with new features (search, filtering, personalization, etc.)
-
----
-
-## 🧱 Project Structure
+## Project structure
 
 ```text
-h-m-recsys/
-├── .venv/ # uv-created virtual environment
-|── app/ # Streamlit app code
-│ └── home.py
-├── data/ # Data files (CSV, metadata, etc.)
-├── models/ # Future recommender system models
-├── .gitignore
-├── README.md
+H-M-RecSys/
+├── storefront/            # Modern React storefront (active product surface)
+│   ├── app/
+│   │   ├── data/          # Typed catalog and baseline recommender
+│   │   ├── page.tsx       # Storefront experience and interactions
+│   │   └── globals.css    # Responsive editorial design system
+│   └── public/products/   # Local product photography
+├── app/                   # Original Streamlit prototype (legacy reference)
+└── data/                  # H&M sample catalog, transactions, and source images
 ```
----
 
-## 💻 Getting Started
+## Run the storefront
 
-### 1. Clone the repo
+The storefront requires Node.js 22.13 or newer.
 
 ```bash
-git clone https://github.com/RyanCaldwell360/H-M-RecSys.git
-cd h-m-recsys
+cd storefront
+npm install
+npm run dev
 ```
 
-### 2. Set up the environment using uv
+Open `http://localhost:3000`.
+
+Build the deployable version with:
 
 ```bash
-uv venv
-uv pip install streamlit
+npm run build
 ```
 
-### 3. Run the Streamlit app
+## Baseline recommender
 
-```bash
-streamlit run app/home.py
-```
+The current recommender lives in `storefront/app/data/catalog.ts`. It excludes known purchases and combines four inspectable signals:
 
-Then open your browser to:
+| Signal | Weight | Purpose |
+| --- | ---: | --- |
+| Recent popularity | 35% | Ground recommendations in observed sample demand |
+| Category affinity | 30% | Match categories represented in the shopper profile |
+| Colour affinity | 20% | Match preferred colour families |
+| Collection + discovery | 15% | Preserve department affinity while allowing novelty |
 
-```arduino
-http://localhost:8501
-```
+This is a UI-enabling baseline, not a claim of recommendation quality. Its main job is to establish a stable product contract that a learned model can replace later.
 
-## 📦 Dependencies
+## Roadmap to TIGER
 
-This project uses the following core dependencies:
+The target architecture is Google’s [TIGER: Recommender Systems with Generative Retrieval](https://arxiv.org/abs/2305.05065). A practical implementation path for this repo is:
 
-- [Python 3.9+](https://www.python.org/downloads/)
-- [Streamlit](https://streamlit.io/) — for building the interactive UI
-- [uv](https://github.com/astral-sh/uv) — for managing the virtual environment and dependencies
+1. Create temporal train/validation/test splits and baseline Recall@K/NDCG@K evaluation.
+2. Move recommendation logic behind a small service contract while keeping the storefront unchanged.
+3. Encode product content and learn hierarchical Semantic IDs with residual quantization.
+4. Convert customer histories into Semantic ID sequences and train a Transformer encoder-decoder to predict the next item ID autoregressively.
+5. Add constrained beam-search retrieval, collision handling, cold-start evaluation, and online latency measurements.
+6. Compare popularity, co-visitation, matrix factorization, sequential baselines, and TIGER under the same evaluation harness.
 
-## 📌 Roadmap
+That progression keeps the site useful at every stage and makes improvements measurable instead of swapping models without evidence.
 
-This project is evolving toward a fully interactive, production-ready recommendation system. Below are the planned phases of development:
+## Legacy Streamlit prototype
 
-- [x] **Initial Setup**  
-  Establish project structure, version control, and basic Streamlit UI.
-
-- [ ] **Data Integration**  
-  Load and visualize H&M product and transaction data.
-
-- [ ] **Baseline Recommendations**  
-  Implement simple heuristics and popularity-based models.
-
-- [ ] **Personalized Recommendations**  
-  Integrate user-based and item-based models using collaborative filtering or hybrid approaches.
-
-- [ ] **Advanced Modeling**  
-  Experiment with matrix factorization, sequence models (e.g., Transformers), and semantic representations.
-
-- [ ] **Interactive Features**  
-  Add user controls, filters, search functionality, and item details.
-
-- [ ] **Deployment**  
-  Deploy to Streamlit Cloud or similar platform for public access.
-
-- [ ] **Documentation & Polish**  
-  Finalize README, code comments, and usability improvements.
+The original exploratory app remains in `app/` for reference. The modern storefront is the active interface and should be the integration target for future models.
