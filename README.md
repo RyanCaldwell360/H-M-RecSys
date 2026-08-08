@@ -66,7 +66,7 @@ npm test
 - `GET /api/customers?page=1&limit=25` lists anonymous cohort members.
 - `GET /api/customers/1` returns Shopper 0001's complete available history and baseline recommendations.
 
-The public API uses cohort ranks and labels rather than exposing the dataset's full customer hashes.
+The preprocessing step uses source hashes only for local cohort selection. Generated migrations replace them with internal keys such as `shopper-0001`, and the public API exposes only cohort ranks and labels.
 
 ## Baseline recommender
 

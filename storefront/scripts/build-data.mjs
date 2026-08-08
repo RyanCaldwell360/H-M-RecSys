@@ -118,12 +118,16 @@ const selectedCustomers = eligibleCustomers
     customerId,
     cohortRank: index + 1,
     label: `Shopper ${String(index + 1).padStart(4, "0")}`,
+    customerKey: `shopper-${String(index + 1).padStart(4, "0")}`,
     history: history.sort((left, right) =>
       left.t_dat.localeCompare(right.t_dat) || left.article_id.localeCompare(right.article_id),
     ),
   }));
 
 const selectedCustomerIds = new Set(selectedCustomers.map((customer) => customer.customerId));
+const customerKeyBySourceId = new Map(
+  selectedCustomers.map((customer) => [customer.customerId, customer.customerKey]),
+);
 const selectedTransactions = sourceTransactions.filter((transaction) =>
   selectedCustomerIds.has(transaction.customer_id),
 );
@@ -177,7 +181,7 @@ for (let index = 0; index < articleRows.length; index += articlesPerMigration) {
 const customerRows = selectedCustomers.map((customer) => {
   const dates = customer.history.map((transaction) => transaction.t_dat).sort();
   return `(${[
-    sqlText(customer.customerId),
+    sqlText(customer.customerKey),
     customer.cohortRank,
     sqlText(customer.label),
     customer.history.length,
@@ -196,7 +200,7 @@ await writeFile(
 
 const transactionRows = selectedTransactions.map((transaction) =>
   `(${[
-    sqlText(transaction.customer_id),
+    sqlText(customerKeyBySourceId.get(transaction.customer_id)),
     sqlText(transaction.t_dat),
     sqlText(transaction.article_id),
     sqlNumber(transaction.price),
