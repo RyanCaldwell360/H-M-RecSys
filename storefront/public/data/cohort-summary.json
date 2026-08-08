@@ -1,0 +1,22 @@
+{
+  "source": "H&M Personalized Fashion Recommendations",
+  "catalogArticles": 105542,
+  "sourceTransactions": 8784,
+  "sourceCustomers": 7315,
+  "eligibleCustomers": 1181,
+  "selectedCustomers": 1000,
+  "selectedTransactions": 2248,
+  "photographedArticles": 20,
+  "transactionDateRange": {
+    "first": "2020-09-16",
+    "last": "2020-09-22"
+  },
+  "selection": "Deterministic SHA-256 sample from customers with at least two interactions",
+  "historyDistribution": {
+    "2": 799,
+    "3": 161,
+    "4": 35,
+    "5": 4,
+    "7": 1
+  }
+}

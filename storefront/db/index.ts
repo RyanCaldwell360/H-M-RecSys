@@ -11,3 +11,12 @@ export function getDb() {
 
   return drizzle(env.DB, { schema });
 }
+
+export function getD1() {
+  if (!env.DB) {
+    throw new Error(
+      "The catalog database is unavailable. Apply the generated D1 migrations before using catalog APIs.",
+    );
+  }
+  return env.DB;
+}

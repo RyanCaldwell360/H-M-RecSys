@@ -1,76 +1,95 @@
 # H&M Personalized Fashion Storefront
 
-A production-like fashion storefront built on the [H&M Personalized Fashion Recommendations](https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations) dataset. The project pairs a polished shopping experience with an intentionally visible recommendation layer so it can grow into both a useful RecSys learning project and a portfolio case study.
+A production-like fashion storefront built on the [H&M Personalized Fashion Recommendations](https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations) dataset. The project pairs a polished shopping experience with an intentionally visible recommendation layer so it can grow into both a RecSys learning project and a portfolio case study.
 
 > This is an educational portfolio project and is not affiliated with H&M.
 
 ## What works today
 
-- A responsive storefront using 20 real catalog records and their product photography
-- Three demo shopper profiles that rerank the collection in real time
-- An explainable popularity + affinity baseline recommender
-- Search, category filters, favourites, product details, size selection, and a demo bag
-- A model explainer that shows the current signals and the path to TIGER
-- A Cloudflare-compatible production build under `storefront/`
+- All 105,542 article metadata records are stored in an indexed D1/SQLite catalog.
+- Full-text catalog search and server-side pagination keep the browser payload small.
+- A reproducible cohort contains 1,000 anonymous customers and all 2,248 of their available interactions.
+- The shopper signal lab shows real purchase histories and baseline next-item recommendations.
+- Twenty sampled articles include their real product photography; metadata-first placeholders honestly represent the remaining catalog.
+- Search, filters, favourites, product details, sizes, and a demo bag remain available in the photographed storefront edit.
+- The app builds as a Cloudflare-compatible worker under `storefront/`.
+
+## Dataset scope
+
+The checked-in transaction sample is not the full Kaggle transaction table. It contains:
+
+- 8,784 interactions from 7,315 customers
+- A date window of September 16-22, 2020
+- 1,181 customers with at least two interactions
+- Transactions for the same 20 articles whose images are present in this repo
+
+The generated 1,000-customer cohort is a deterministic SHA-256 sample from those 1,181 eligible customers. Every available interaction for each selected customer is preserved. This makes local rebuilds stable while avoiding an activity-biased "top customers only" sample.
 
 ## Project structure
 
 ```text
 H-M-RecSys/
-├── storefront/            # Modern React storefront (active product surface)
-│   ├── app/
-│   │   ├── data/          # Typed catalog and baseline recommender
-│   │   ├── page.tsx       # Storefront experience and interactions
-│   │   └── globals.css    # Responsive editorial design system
-│   └── public/products/   # Local product photography
-├── app/                   # Original Streamlit prototype (legacy reference)
-└── data/                  # H&M sample catalog, transactions, and source images
+|-- storefront/                 # Active React storefront
+|   |-- app/api/                # Catalog and customer-history APIs
+|   |-- app/components/         # Catalog archive and shopper explorer
+|   |-- db/schema.ts            # D1/SQLite schema and indexes
+|   |-- drizzle/                # Schema and generated data migrations
+|   |-- scripts/build-data.mjs  # Reproducible cohort/catalog preprocessing
+|   `-- public/data/            # Small generated browser-facing artifacts
+|-- app/                        # Original Streamlit prototype
+`-- data/                       # Source catalog, transactions, and 20 images
 ```
 
-## Run the storefront
+## Rebuild the data layer
 
 The storefront requires Node.js 22.13 or newer.
 
 ```bash
 cd storefront
 npm install
+npm run data:refresh
+npm run db:local:apply
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+`data:refresh` regenerates the schema migration, the deterministic customer cohort, the catalog seed shards, the transaction seed, and the full-text search index. `db:local:apply` loads those migrations into the local D1 database.
 
-Build the deployable version with:
+Open `http://localhost:3000`. Build and test with:
 
 ```bash
-npm run build
+npm test
 ```
+
+## Data APIs
+
+- `GET /api/catalog?page=1&limit=24&q=denim` searches and paginates the complete catalog.
+- `GET /api/customers?page=1&limit=25` lists anonymous cohort members.
+- `GET /api/customers/1` returns Shopper 0001's complete available history and baseline recommendations.
+
+The public API uses cohort ranks and labels rather than exposing the dataset's full customer hashes.
 
 ## Baseline recommender
 
-The current recommender lives in `storefront/app/data/catalog.ts`. It excludes known purchases and combines four inspectable signals:
+The customer-history API excludes previously purchased items and combines four inspectable signals:
 
 | Signal | Weight | Purpose |
 | --- | ---: | --- |
 | Recent popularity | 35% | Ground recommendations in observed sample demand |
-| Category affinity | 30% | Match categories represented in the shopper profile |
-| Colour affinity | 20% | Match preferred colour families |
+| Category affinity | 30% | Match categories represented in purchase history |
+| Colour affinity | 20% | Match observed colour families |
 | Collection + discovery | 15% | Preserve department affinity while allowing novelty |
 
-This is a UI-enabling baseline, not a claim of recommendation quality. Its main job is to establish a stable product contract that a learned model can replace later.
+This is a data-integration baseline, not a claim of recommendation quality. Its main job is to establish a stable API contract that learned models can replace.
 
 ## Roadmap to TIGER
 
-The target architecture is Google’s [TIGER: Recommender Systems with Generative Retrieval](https://arxiv.org/abs/2305.05065). A practical implementation path for this repo is:
+The target architecture is Google's [TIGER: Recommender Systems with Generative Retrieval](https://arxiv.org/abs/2305.05065). A practical implementation path is:
 
-1. Create temporal train/validation/test splits and baseline Recall@K/NDCG@K evaluation.
-2. Move recommendation logic behind a small service contract while keeping the storefront unchanged.
-3. Encode product content and learn hierarchical Semantic IDs with residual quantization.
-4. Convert customer histories into Semantic ID sequences and train a Transformer encoder-decoder to predict the next item ID autoregressively.
-5. Add constrained beam-search retrieval, collision handling, cold-start evaluation, and online latency measurements.
-6. Compare popularity, co-visitation, matrix factorization, sequential baselines, and TIGER under the same evaluation harness.
+1. Replace the one-week transaction sample with the complete Kaggle transaction table.
+2. Create temporal train/validation/test splits and Recall@K/NDCG@K evaluation.
+3. Add co-visitation, popularity, and sequential baselines behind the existing recommendation API.
+4. Encode product content and learn hierarchical Semantic IDs with residual quantization.
+5. Train a Transformer encoder-decoder to predict next-item Semantic IDs autoregressively.
+6. Add constrained beam-search retrieval, collision handling, cold-start evaluation, and latency measurements.
 
-That progression keeps the site useful at every stage and makes improvements measurable instead of swapping models without evidence.
-
-## Legacy Streamlit prototype
-
-The original exploratory app remains in `app/` for reference. The modern storefront is the active interface and should be the integration target for future models.
+The storefront and API contract can stay stable while each model iteration becomes measurable.

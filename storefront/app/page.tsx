@@ -8,6 +8,8 @@ import {
   type Product,
   type ProfileId,
 } from "./data/catalog";
+import { CatalogArchive } from "./components/CatalogArchive";
+import { CustomerExplorer } from "./components/CustomerExplorer";
 
 const categoryFilters = [
   "All",
@@ -256,25 +258,27 @@ export default function Home() {
 
       <section className="story-strip">
         <div>
-          <span>01</span>
-          <p>Starts with real purchase signals</p>
+          <span>105,542</span>
+          <p>Complete article metadata records</p>
         </div>
         <div>
-          <span>02</span>
-          <p>Balances affinity with popularity</p>
+          <span>1,000</span>
+          <p>Anonymous customers with full sampled histories</p>
         </div>
         <div>
-          <span>03</span>
-          <p>Built to graduate to TIGER</p>
+          <span>2,248</span>
+          <p>Preserved purchase interactions</p>
         </div>
-        <button type="button" onClick={() => setModelOpen(true)}>Explore the model <span>↗</span></button>
+        <button type="button" onClick={() => document.querySelector('#customer-lab')?.scrollIntoView()}>Explore customer histories <span>↓</span></button>
       </section>
 
-      <section className="catalog section-shell" id="catalog">
+      <CustomerExplorer />
+
+      <section className="catalog section-shell" id="photographed">
         <div className="catalog-heading">
           <div>
-            <p className="eyebrow">The full collection</p>
-            <h2>Shop all</h2>
+            <p className="eyebrow">The photographed sample</p>
+            <h2>Shop the edit</h2>
           </div>
           <p className="result-count">{filteredProducts.length} items</p>
         </div>
@@ -321,6 +325,8 @@ export default function Home() {
           </div>
         ) : null}
       </section>
+
+      <CatalogArchive />
 
       <footer>
         <div className="footer-mark">H<span>&</span>M <small>RECSYS LAB</small></div>
